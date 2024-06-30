@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} Halaman Utama {% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')}}">
+    {% block layout %}{% endblock %}
+</head>
+<body>
+    <div id="container">
+        <header>
+            {% block header %} <h1>Berita Masa Kini</h1> {% endblock %}
+        </header>
+        <nav id="navbar">
+            {% block navbar %}
+            <ul>
+                <li><a href="{{ url_for('index') }}" class="active">Home</a></li>
+                <li><a href="{{ url_for('artikel') }}" class="active">Artikel</a></li>
+                <li><a href="{{ url_for('about') }}" class="active">About</a></li>
+                <li><a href="{{ url_for('contact') }}" class="active">Contact</a></li>
+            </ul>
+            {% endblock %}
+        </nav>
+        <div id="rteks">
+            {% block running %}
+            <marquee height="25" style="font-size: large; background-color: rgb(197, 206, 241);">Teks ini berjalan</marquee>
+            {% endblock %}
+        </div>
+        <div id="wrapper">
+            {% block gambar %}
+            <img src="{{ url_for('static', filename='gambar/indonesia1.png')}}" alt="gambar">
+            {% endblock %}
+        </div>
+        <section id="main">
+            {% block artikel %}
+            <article class="artikel">
+                <p>
+                  KEMENKO PMK --  Indonesia akan mengalami usia emas pada tahun 2045. Pada saat itu, Indonesia genap berusia 100 tahun alias satu abad. Di masa itu, ditargetkan Indonesia sudah menjadi negara maju dan telah sejajar dengan negara adidaya. 
+                </p><br>
+                <p>
+                  Momentum bersejarah tersebut memang masih sekitar saperempat abad lagi. Namun untuk mewujudkannya butuh persiapan yang matang sejak jauh-jauh hari. Sumber daya manusia Indonesia harus unggul, berkualitas, dan memiliki karakter. 
+                </p><br>
+                <p>
+                  Menteri Koordinator Bidang Pembangunan Manusia dan Kebudayaan (Menko PMK) Muhadjir Effendy mengatakan, generasi yang akan mewujudkan Indonesia Emas adalah generasi muda, khususnya yang saat ini tengah menempuh pendidikan di perguruan tinggi.
+                </p><br>
+                <p>
+                  Dia menerangkan, para mahasiswa/mahasiswi dan lulusan universitas jenjang sarjana saat ini berada di kisaran usia 20 tahun. Menurutnya, pada masa Indonesia berusia 100 tahun yaitu 2045, usia mereka masih sekitar 40 tahun ke atas, yang merupakan usia puncak karir bagi profesional.
+                </p><br>
+                <p>
+                  "Artinya, Indonesia Emas itu adalah milik saudara semua, bukan milik saya. Bukan milik mereka yang saat ini usianya sudah di atas 50 tahun," ujar Muhadjir saat menyampaikan sambutan pada Wisuda Ke-105 Periode III Universitas Muhammadiyah Malang (UMM), di UMM Dome Malang, pada Kamis (6/10/2022).
+                </p>
+            </article>
+            <hr class="divider" />
+            <article class="entry">
+                <h2>Pemilihan Umum 2024</h2>
+                <img src="{{ url_for('static', filename='gambar/pemilu.jpeg')}}" alt="Pemilu">
+                <p>Indonesia mendekati waktu pemilihan umum (pemilu) serentak tahun 2024. Pemilu serentak ini memilih Presiden dan Wakil Presiden, Anggota DPR, DPD, DPRD Provinsi dan DPRD Kabupaten/Kota.
+                  <a href="#">Lantas siapa peserta pemilu 2024?.</a>
+                </p>
+            </article>
+            <hr class="divider" />
+            <article class="entry">
+                <h2>Ice Cold Documentary Film</h2>
+                <img src="{{ url_for('static', filename='gambar/Icecold.jpeg')}}" alt="IceCold" class="right-img">
+                <p>Dokumenter ini mengulas berbagai pertanyaan tak terjawab seputar persidangan Jessica Wongso—bertahun-tahun setelah kematian sahabatnya, Mirna Salihin.
+                  Dengan menyaksikan dokumenter ini, mari bersama-sama memahami kasus ini <a href="#">lebih kompleks lagi.</a>
+                </p>
+            </article>
+            <div style="clear: both;"></div>
+            {% endblock %}
+        </section>
+        <section>
+            <aside id="sidebar">
+                <div class="side-bar">
+                  <h3 class="title">Other News</h3>
+                  <ul>
+                    <li><a href="#">Sport News</a></li>
+                    <li><a href="#">Political News</a></li>
+                    <li><a href="#">Economic News</a></li>
+                    <li><a href="#">Environmental News</a></li>
+                    <li><a href="#">Domestic News</a></li>
+                  </ul>
+                </div>
+                <div class="side-bar">
+                  <h3 class="title">Widget Text</h3>
+                  <p>Vestibulum lorem elit, iaculis in nisl volutpat, malesuada tincidunt 
+                    arcu. Proin in leo fringilla, vestibulum mi porta, faucibus felis. Integer 
+                    pharetra est nunc, nec pretium nunc pretium ac.</p>
+                </div>
+            </aside>
+        </section>
+        {% block container %} {% endblock %}
+    </div>
+    <footer>
+        <div class="kontak">
+          <h2><a href="kontak.html" style="text-decoration: none;">Contact</a></h2>
+          <p>&#128383; 0812-9318-9221</p>
+          <p><a href="kontak.html" style="text-decoration: none;">&#128386; dimasf.30@mhs.pelitabangsa.ac.id</a></p>
+        </div>
+        <div class="lisensi">
+          <p>&copy; 2023 - Dimas Firmansyah</p>
+        </div>
+    </footer>
+</body>
+</html>

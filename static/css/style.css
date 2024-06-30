@@ -1,0 +1,138 @@
+/* styles.css */
+*{
+    padding: 0px;
+    margin: 0px;
+}
+body {
+    background-color: #f9f9f9;
+}
+
+#container {
+    width: 980px;
+    height: 2000px;
+    margin: 0 auto;
+    box-shadow: 0 0 1em #cccccc;
+    background-color: rgb(234, 234, 234);
+}
+
+/* header */
+header{
+    padding: 10px;
+    background-color: #ddd8d8;
+    text-align: center;
+}
+header h1 {
+    margin: 20px 10px;
+    color: #181616;
+}
+
+/* navbar */
+#navbar{
+    padding: 10px;
+    background-color: rgb(244, 34, 34);
+    display: block;
+}
+#navbar ul li {
+    list-style-type: none;
+    display: inline-block;
+}
+#navbar ul li a{
+    text-decoration: none;
+    padding: 5px;
+    margin: 10px;
+    color: white;
+}
+
+/* WRAPPER */
+#wrapper{
+    text-align: center;
+}
+#wrapper img{
+    align-items: center;
+    width: 900px;
+}
+
+/* MAIN */
+#main {
+    float: left;
+    width: 635px;
+    padding: 15px;
+}
+
+/* SIDEBAR */
+#sidebar{
+    float: left;
+    width: 260px;
+    padding: 20px;
+}
+.side-bar .title {
+    padding:10px 16px;
+    background-color:#428bca;
+    color:#fff;
+}    
+.side-bar {
+    border:2px solid #eee;
+    margin-bottom:20px;
+}
+.side-bar ul{
+    list-style: none; 
+}
+.side-bar ul li{
+   border-bottom:1px solid #eee;
+}
+.side-bar a{
+    padding:10px 16px;
+    color:#333;
+    display:block;
+    text-decoration:none;
+}
+.side-bar li:hover a {
+    background-color:#ffffff;
+}
+.side-bar p {
+    padding:15px;
+    line-height:25px;
+}
+
+/* ARTIKEL */
+.artikel{
+    margin-left: 8px;
+    padding: 30px;
+}
+.artikel p{
+    font-size: 100%;
+    justify-content: space-between;
+    text-align: justify;
+}
+
+/* More Artikel */
+.entry {
+    margin: 15px 0;
+    margin-left: 30px;
+}
+.entry h2 {
+    margin-bottom: 20px;
+}
+.entry p {
+    line-height: 25px;
+}
+.entry img {
+    float: left;
+    border-radius: 5px;
+    margin-right: 15px;
+}
+.entry .right-img {
+    float: right;
+}
+
+/* FOOTER */
+footer{
+    background-color: aqua;
+    padding: 20px;
+    margin: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+.lisensi{
+    float: right;
+}
