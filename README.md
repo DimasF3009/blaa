@@ -8,7 +8,7 @@ List kamis 26 des 24
 7.	Km 12 pth4l
 8.	Am 15 pth 3l
 9.	Am 15 htm 1l
-10.	Gol 8 pth tl 89 l
+10.	Gol 8 pth tl 91 l
 11.	Gtg nana mrh 1l
 12.	Cantol pth 6L
 13.	CANTOL HTM 19L
