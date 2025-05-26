@@ -1,68 +1,21 @@
-import streamlit as st
+Kecepatan_Layanan, Kualitas_Produk Harga, Kemudahan Penggunaan Target Kepuasan
 
-import pandas as pd
+7,8,6,7,7.5
 
-from sklearn.linear_model import LinearRegression
+8,7,5,8,7.8
 
-#Load dataset CSV
+6,9,7,6,8.2
 
-data = pd.read_csv(dataset_kepuasan.csv)
+5,6,4,5,5.5
 
-#Fitur dan target
+9,9,8,9,9.0
 
-X = data[[Kecepatan_Layanan', 'Kualitas_Produk, "Harga, Kemudahan Penggunaan
+4,5,3,4,4.2
 
-y=data['Target_Kepuasan]
+7,6,5,7,6.8
 
-#Latih model regresi linier dari data CSV
+8,8,6,8,8.0
 
-model LinearRegression()
+6,7,4,6,6.5
 
-model.fit(X, y)
-
-# Judul aplikasi
-
-st.title('Prediksi Tingkat Kepuasan Pelanggan")
-
-st.write("Masukkan faktor-faktor berikut untuk memperkirakan tingkat kepuasan pelanggan:)
-Input dari pengguna
-
-kecepatan st.slider('Kecepatan Layanan', 1, 10, 5)
-
-kualitas st.slider('Kualitas Produk', 1, 10, 7)
-
-harga st. slider('Harga', 1, 10, 5)
-
-kemudahan st.slider('Kemudahan Penggunaan', 1, 10, 6)
-
-#Membuat DataFrame input
-
-input_df = pd.DataFrame({
-
-'Kecepatan_Layanan': [kecepatan],
-
-'Kualitas_Produk': [kualitas],
-
-'Harga': [harga],
-
-'Kemudahan_Penggunaan': [kemudahan] })
-
-# Tombol untuk melakukan prediksi
-
-if st.button('Prediksi Tingkat Kepuasan'):
-
-prediksi = model.predict(input_df)[0]
-
-st. write (f'Prediksi Skor Tingkat Kepuasan: {prediksi:.2f}')
-
-# Interpretasi hasil
-
-if prediksi >= 8:
-
-tingkat = 'Sangat Puas'
-
-elif prediksi >= 6:
-
-tingkat = 'Puas'
-
-elif prediksi >= 4: tingkat = 'Cukup Puas' else: tingkat = 'Tidak Puas' st.write(f'Tingkat Kepuasan: (tingkat}')
+5,5,3,5,4.8
