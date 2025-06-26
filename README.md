@@ -1,106 +1,128 @@
 ```
-from flask import Flask, request, jsonify
-import json
 import os
-import requests # Digunakan untuk mengirim HTTP requests (untuk replikasi)
+from flask import Flask, request, jsonify
+import requests
+import json
+import threading
+import time
 
 app = Flask(__name__)
-DATA_FILE = 'data.json' # Nama file tempat data akan disimpan
 
-# --- KONFIGURASI SERVER INI ---
-# ######################################################################
-# ### BACALAH DENGAN SAKSAMA DAN UBAH SESUAI DENGAN LAPTOP KAMU ##########
-# ######################################################################
+# Default values - akan ditimpa di main block
+REPLICATION_TARGET_IP = None
+REPLICATION_TARGET_PORT = 5000
+IS_PRIMARY = None
 
-# Ganti dengan IP address dari LAPTOP KALI LINUX (SECONDARY SERVER)
-# Contoh: '192.168.1.101' atau '172.29.80.96' jika itu IP Kali kamu
-REPLICATION_TARGET_IP = 'GANTI_DENGAN_IP_LAPTOP_KALI_LINUX_DI_SINI'
+DATA_FILE = 'data.json'
+data = {}
+data_lock = threading.Lock()
 
-# Setel IS_PRIMARY:
-# - True jika ini adalah LAPTOP UBUNTU (PRIMARY SERVER)
-# - False jika ini adalah LAPTOP KALI LINUX (SECONDARY SERVER)
-IS_PRIMARY = True # <--- UBAH INI JIKA KAMU DI LAPTOP KALI LINUX MENJADI False
-
-# ######################################################################
-# ### AKHIR KONFIGURASI ################################################
-# ######################################################################
-
-
-# Fungsi untuk membaca data dari file JSON
-def read_data():
-    # Jika file data belum ada, buat dengan data default
-    if not os.path.exists(DATA_FILE):
-        default_data = {"message": "Server initialized, no specific data yet."}
-        with open(DATA_FILE, 'w') as f:
-            json.dump(default_data, f, indent=4)
-        return default_data
-    try:
-        # Baca data dari file
+# Fungsi untuk memuat data dari file
+def load_data():
+    global data
+    if os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'r') as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        # Tangani jika file data korup atau kosong
-        print(f"Warning: {DATA_FILE} is corrupted or empty. Resetting to default.")
-        default_data = {"message": "Data file corrupted/empty, reset to default."}
-        with open(DATA_FILE, 'w') as f:
-            json.dump(default_data, f, indent=4)
-        return default_data
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = {} # Jika file rusak/kosong, mulai dari kosong
+    else:
+        data = {}
 
-# Fungsi untuk menulis data ke file JSON
-def write_data(new_data):
+# Fungsi untuk menyimpan data ke file
+def save_data():
     with open(DATA_FILE, 'w') as f:
-        json.dump(new_data, f, indent=4)
+        json.dump(data, f, indent=4)
 
-# Endpoint utama: Menampilkan data saat ini
-@app.route('/')
-def index():
-    data = read_data()
-    # Menambahkan informasi peran server (Primary/Secondary) dan hostname
-    server_role = "Primary" if IS_PRIMARY else "Secondary"
-    data["served_by"] = f"Server {server_role} ({os.uname().nodename})"
-    return jsonify(data)
+# Muat data saat aplikasi dimulai
+load_data()
 
-# Endpoint untuk menerima data dari server lain (digunakan untuk replikasi)
-@app.route('/replicate', methods=['POST'])
-def replicate_data():
-    if request.is_json:
-        new_data = request.get_json()
-        write_data(new_data) # Tulis data yang diterima ke file lokal
-        print(f"Data replicated: {new_data}")
-        return jsonify({"status": "success", "message": "Data replicated successfully"}), 200
-    return jsonify({"status": "error", "message": "Request must be JSON"}), 400
+# Endpoint untuk mendapatkan data
+@app.route('/data', methods=['GET'])
+def get_data():
+    with data_lock:
+        # os.uname().nodename bekerja di Linux/WSL, di Windows native akan error
+        # Kita gunakan platform.node() untuk kompatibilitas lintas OS
+        import platform
+        hostname = platform.node()
+        return jsonify({"status": "success", "data": data, "served_by": hostname})
 
-# Endpoint untuk memperbarui data dari pengguna (Hanya di server Primary yang akan memicu replikasi)
-@app.route('/update', methods=['POST'])
+# Endpoint untuk menambahkan/mengupdate data (hanya di Primary)
+@app.route('/data', methods=['POST'])
 def update_data():
-    # Hanya server Primary yang boleh menerima update langsung dari client
     if not IS_PRIMARY:
         return jsonify({"status": "error", "message": "This is a secondary server, cannot update directly."}), 403
 
-    if request.is_json:
-        new_data_from_client = request.get_json()
-        write_data(new_data_from_client) # Tulis data yang diterima ke file lokal
-        print(f"Data updated by client: {new_data_from_client}")
+    new_data = request.json
+    if not new_data:
+        return jsonify({"status": "error", "message": "No data provided"}), 400
 
-        # --- BAGIAN LOGIKA REPLIKASI KE SERVER CADANGAN ---
-        try:
-            # Kirim data terbaru ke endpoint /replicate di server cadangan
-            # Pastikan REPLICATION_TARGET_IP sudah benar diatur di atas
-            response = requests.post(f"http://{REPLICATION_TARGET_IP}:5000/replicate", json=new_data_from_client)
-            if response.status_code == 200:
-                print("Replication to secondary successful.")
-            else:
-                print(f"Replication to secondary failed: {response.text}")
-        except requests.exceptions.ConnectionError as e:
-            print(f"Could not connect to secondary server for replication: {e}")
-        # --- AKHIR LOGIKA REPLIKASI ---
+    with data_lock:
+        data.update(new_data)
+        save_data() # Simpan ke file
 
-        return jsonify({"status": "success", "message": "Data updated by client and (attempted) replicated"}), 200
-    return jsonify({"status": "error", "message": "Request must be JSON"}), 400
+        # Jika ini primary, replikasi ke secondary di background
+        threading.Thread(target=replicate_data, args=(new_data,)).start()
+        return jsonify({"status": "success", "message": "Data updated", "data": data, "served_by": platform.node()})
 
-# Main entry point: Menjalankan aplikasi Flask
+# Endpoint untuk menerima replikasi (hanya untuk secondary)
+@app.route('/replicate', methods=['POST'])
+def receive_replication():
+    if IS_PRIMARY: # Primary tidak seharusnya menerima replikasi
+        return jsonify({"status": "error", "message": "Primary server cannot receive replication"}), 403
+
+    replicated_data = request.json
+    if not replicated_data:
+        return jsonify({"status": "error", "message": "No replication data provided"}), 400
+
+    with data_lock:
+        data.update(replicated_data)
+        save_data()
+        print(f"[{platform.node()}] Data replicated successfully: {replicated_data}")
+    return jsonify({"status": "success", "message": "Data replicated"}), 200
+
+# Fungsi untuk mereplikasi data ke target
+def replicate_data(data_to_replicate):
+    if not REPLICATION_TARGET_IP:
+        print("REPLICATION_TARGET_IP not configured. Skipping replication.")
+        return
+
+    try:
+        print(f"[{platform.node()}] Attempting to replicate data to {REPLICATION_TARGET_IP}:{REPLICATION_TARGET_PORT}")
+        response = requests.post(
+            f'http://{REPLICATION_TARGET_IP}:{REPLICATION_TARGET_PORT}/replicate',
+            json=data_to_replicate,
+            timeout=5 # Timeout untuk mencegah hang
+        )
+        response.raise_for_status() # Akan memunculkan HTTPError untuk status kode 4xx/5xx
+        print(f"[{platform.node()}] Replication successful to {REPLICATION_TARGET_IP}")
+    except requests.exceptions.ConnectionError as e:
+        print(f"[{platform.node()}] Replication failed: Connection error to {REPLICATION_TARGET_IP}. Is the secondary server running and accessible? Error: {e}")
+    except requests.exceptions.Timeout:
+        print(f"[{platform.node()}] Replication failed: Timeout connecting to {REPLICATION_TARGET_IP}")
+    except requests.exceptions.RequestException as e:
+        print(f"[{platform.node()}] Replication failed: An unexpected error occurred: {e}")
+
 if __name__ == '__main__':
-    # Jalankan aplikasi di semua interface (0.0.0.0) agar bisa diakses dari jaringan
-    # Debug=True hanya untuk pengembangan, jangan gunakan di produksi
+    # --- PENTING: SET KONFIGURASI DI SINI BERDASARKAN LAPTOP KAMU ---
+    import platform
+    current_hostname = platform.node()
+
+    # Untuk Laptop 1 (Ubuntu):
+    # GANTI 'your_ubuntu_hostname' dengan output perintah 'hostname' di terminal Ubuntu
+    if current_hostname == 'your_ubuntu_hostname': # <-- GANTI INI!
+        IS_PRIMARY = True
+        REPLICATION_TARGET_IP = '192.168.1.101' # <-- IP WINDOWS KAMU
+        print(f"[{current_hostname}] Running as PRIMARY server. Target for replication: {REPLICATION_TARGET_IP}")
+    # Untuk Laptop 2 (Windows):
+    # GANTI 'your_windows_hostname' dengan output perintah 'hostname' di Command Prompt Windows
+    elif current_hostname == 'your_windows_hostname': # <-- GANTI INI!
+        IS_PRIMARY = False
+        REPLICATION_TARGET_IP = '192.168.1.100' # <-- IP UBUNTU KAMU
+        print(f"[{current_hostname}] Running as SECONDARY server. Target for replication: {REPLICATION_TARGET_IP}")
+    else:
+        print(f"WARNING: Hostname '{current_hostname}' not recognized. Please set IS_PRIMARY and REPLICATION_TARGET_IP manually.")
+        exit("Exiting: Server role not defined based on hostname.")
+
     app.run(host='0.0.0.0', port=5000, debug=False)
 ```
