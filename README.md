@@ -1,4 +1,4 @@
-                                              app.py                                                             from flask import Flask, request, jsonify
+```                                              app.py                                                             from flask import Flask, request, jsonify
 import json
 import os
 import requests # Penting untuk mengirim request HTTP
@@ -27,3 +27,4 @@ def read_data():
             return json.load(f)
     except json.JSONDecodeError:
         # Jika file korup, kembalikan default dan reset file
+```
